@@ -1,11 +1,31 @@
 {
   "name": "cuti",
+  "version": "1.0.0",
+  "description": "A modular CLI tool built with Commander.js",
+  "main": "dist/index.js",
   "module": "index.ts",
   "type": "module",
+  "bin": {
+    "cuti": "dist/index.js"
+  },
+  "scripts": {
+    "build": "bun build index.ts --outdir dist --target node --format esm && chmod +x dist/index.js",
+    "dev": "bun run index.ts",
+    "start": "node dist/index.js",
+    "prepublishOnly": "bun run build"
+  },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/node": "^24.0.13"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0"
   }
 }
