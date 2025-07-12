@@ -31,10 +31,10 @@ async function loadAndRegisterCommands() {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const commandsPath = join(__dirname, 'commands');
-  
+
   if (existsSync(commandsPath)) {
     const commandFiles = await loadCommands(commandsPath);
-    
+
     for (const commandFile of commandFiles) {
       try {
         // Try .ts first (development), then .js (built)
@@ -64,7 +64,7 @@ async function loadAndRegisterCommands() {
     // For bundled version: register commands directly
     logger.debug('Loading bundled commands');
     const commands = [helloCommand, configCommand];
-    
+
     for (const command of commands) {
       try {
         if (command && typeof command.register === 'function') {

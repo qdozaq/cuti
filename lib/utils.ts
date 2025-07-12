@@ -12,8 +12,8 @@ export async function loadCommands(commandsPath: string): Promise<string[]> {
 
     const files = await readdir(commandsPath);
     return files
-      .filter(file => file.endsWith('.ts') || file.endsWith('.js'))
-      .map(file => file.replace(/\.(ts|js)$/, ''));
+      .filter((file) => file.endsWith('.ts') || file.endsWith('.js'))
+      .map((file) => file.replace(/\.(ts|js)$/, ''));
   } catch (error) {
     logger.error(`Failed to load commands: ${error}`);
     return [];
@@ -21,7 +21,7 @@ export async function loadCommands(commandsPath: string): Promise<string[]> {
 }
 
 export function formatList(items: string[]): string {
-  return items.map(item => `  • ${item}`).join('\n');
+  return items.map((item) => `  • ${item}`).join('\n');
 }
 
 export function parseKeyValue(value: string): [string, string] | null {
@@ -33,5 +33,5 @@ export function parseKeyValue(value: string): [string, string] | null {
 }
 
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

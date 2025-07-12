@@ -14,9 +14,7 @@ class ConfigCommand implements CLICommand {
   private store: ConfigStore = {};
 
   register(program: Command): void {
-    const configCmd = program
-      .command(this.name)
-      .description(this.description);
+    const configCmd = program.command(this.name).description(this.description);
 
     configCmd
       .command('set <key=value>')
@@ -47,7 +45,7 @@ class ConfigCommand implements CLICommand {
 
   private set(keyValue: string): void {
     const parsed = parseKeyValue(keyValue);
-    
+
     if (!parsed) {
       logger.error('Invalid format. Use: config set key=value');
       process.exit(1);
@@ -55,7 +53,7 @@ class ConfigCommand implements CLICommand {
 
     const [key, value] = parsed;
     this.store[key] = value;
-    
+
     logger.success(`Set ${chalk.bold(key)} = ${chalk.green(value)}`);
   }
 
@@ -80,7 +78,7 @@ class ConfigCommand implements CLICommand {
 
   private list(): void {
     const keys = Object.keys(this.store);
-    
+
     if (keys.length === 0) {
       logger.info('No configuration values set');
       return;
@@ -94,7 +92,7 @@ class ConfigCommand implements CLICommand {
 
   private async clear(options: { force: boolean }): Promise<void> {
     const count = Object.keys(this.store).length;
-    
+
     if (count === 0) {
       logger.info('No configuration values to clear');
       return;

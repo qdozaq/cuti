@@ -17,13 +17,17 @@ class HelloCommand implements CLICommand {
       .action(this.execute.bind(this));
   }
 
-  private execute(options: { name: string; color: string; emoji: boolean }): void {
+  private execute(options: {
+    name: string;
+    color: string;
+    emoji: boolean;
+  }): void {
     const { name, color, emoji } = options;
     const greeting = `Hello, ${name}!`;
     const prefix = emoji ? '👋 ' : '';
 
     const colorFn = this.getColorFunction(color);
-    
+
     if (colorFn) {
       console.log(prefix + colorFn(greeting));
     } else {
