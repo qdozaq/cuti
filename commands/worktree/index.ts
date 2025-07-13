@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { logger } from '../../lib/logger';
 import type { CLICommand } from '../../types/command';
-import { createWorktree } from './create';
+import { createWorktree } from './add';
 import { removeWorktree } from './remove';
 import { listWorktrees } from './list';
 
@@ -14,26 +14,12 @@ class WorktreeCommand implements CLICommand {
     const worktreeCmd = program
       .command(this.name)
       .alias('wt')
-      .description(this.description)
-      .argument(
-        '[branch]',
-        'branch name for the worktree (default action: create)'
-      )
-      .option(
-        '-p, --path <path>',
-        'custom path for the worktree (default: ../<repo-name>_worktrees/<branch-name>)'
-      )
-      .option('-c, --create', 'create a new branch')
-      .option(
-        '-f, --force',
-        'force creation even if branch exists or has uncommitted changes'
-      )
-      .action(this.executeCreate.bind(this));
+      .description(this.description);
 
-    // Create subcommand
+    // Add subcommand
     worktreeCmd
-      .command('create <branch>')
-      .description('Create a new worktree')
+      .command('add <branch>')
+      .description('Add a new worktree')
       .option(
         '-p, --path <path>',
         'custom path for the worktree (default: ../<repo-name>_worktrees/<branch-name>)'
