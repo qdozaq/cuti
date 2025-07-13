@@ -9,15 +9,6 @@
             "command": "bun run format"
           }
         ]
-      },
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun run format"
-          }
-        ]
       }
     ],
     "Stop": [
