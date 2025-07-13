@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import { jiraClient } from '../../lib/jira';
-import { extractIssueKey, generateBranchName } from '../../lib/jira-utils';
+import { extractIssueKey } from '../../lib/jira-utils';
+import { claudeClient } from '../../lib/claude';
 import { logger } from '../../lib/logger';
 
 export interface PreprocessJiraOptions {
@@ -12,6 +13,27 @@ export interface JiraPreprocessResult {
   branchName: string;
   issueKey: string;
   summary: string;
+}
+
+/**
+ * Extract text content from Atlassian Document Format
+ * @param doc - ADF document
+ * @returns Plain text content
+ */
+function extractTextFromADF(doc: any): string {
+  const texts: string[] = [];
+
+  function traverse(node: any) {
+    if (node.text) {
+      texts.push(node.text);
+    }
+    if (node.content && Array.isArray(node.content)) {
+      node.content.forEach(traverse);
+    }
+  }
+
+  traverse(doc);
+  return texts.join(' ').trim();
 }
 
 /**
@@ -35,8 +57,24 @@ export async function preprocessJiraIssue(
     const issue = await jiraClient.getIssue(issueKey);
     logger.debug(`Issue summary: ${issue.fields.summary}`);
 
-    // Generate branch name
-    const branchName = generateBranchName(issueKey, issue.fields.summary);
+    // Extract description - it might be a complex object or string
+    let description = '';
+    if (issue.fields.description) {
+      if (typeof issue.fields.description === 'string') {
+        description = issue.fields.description;
+      } else if (issue.fields.description.content) {
+        // Handle Atlassian Document Format (ADF)
+        description = extractTextFromADF(issue.fields.description);
+      }
+    }
+
+    // Generate branch name using Claude
+    logger.info('Generating branch name with AI...');
+    const branchName = await claudeClient.generateBranchName(
+      issueKey,
+      issue.fields.summary,
+      description
+    );
     logger.info(`Generated branch name: ${chalk.cyan(branchName)}`);
 
     // Store issue details for return
@@ -48,10 +86,9 @@ export async function preprocessJiraIssue(
 
     // Assign issue if not disabled
     if (!options.noAssign) {
-      // todo: get the user from the config
-      // logger.info('Assigning issue to ');
       try {
-        // await jiraClient.assignIssue(issueKey, );
+        logger.info('Assigning issue to current user...');
+        await jiraClient.assignIssueToCurrentUser(issueKey);
         logger.success('Issue assigned successfully');
       } catch (error) {
         logger.warning(`Failed to assign issue: ${error}`);
