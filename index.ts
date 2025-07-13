@@ -4,7 +4,6 @@ import { Command } from 'commander';
 import { logger } from './lib/logger';
 
 // Import commands directly
-import helloCommand from './commands/hello';
 import configCommand from './commands/config';
 import worktreeCommand from './commands/worktree/index';
 
@@ -23,7 +22,7 @@ program
   });
 
 function registerCommands() {
-  const commands = [helloCommand, configCommand, worktreeCommand];
+  const commands = [configCommand, worktreeCommand];
 
   for (const command of commands) {
     try {

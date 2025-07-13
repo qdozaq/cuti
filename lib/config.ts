@@ -1,9 +1,12 @@
 import { join } from 'path';
 import { homedir } from 'os';
 import { readFileSync, existsSync, mkdirSync } from 'fs';
+import type { JiraConfig } from './jira-config';
 
 export interface Config {
   version: string;
+  branchPrefix?: string;
+  jira?: JiraConfig;
   [key: string]: any;
 }
 
