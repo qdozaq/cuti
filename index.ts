@@ -11,6 +11,7 @@ import type { CLICommand } from './types/command';
 // Import commands directly for bundling
 import helloCommand from './commands/hello';
 import configCommand from './commands/config';
+import worktreeCommand from './commands/worktree';
 
 const program = new Command();
 
@@ -63,7 +64,7 @@ async function loadAndRegisterCommands() {
   } else {
     // For bundled version: register commands directly
     logger.debug('Loading bundled commands');
-    const commands = [helloCommand, configCommand];
+    const commands = [helloCommand, configCommand, worktreeCommand];
 
     for (const command of commands) {
       try {

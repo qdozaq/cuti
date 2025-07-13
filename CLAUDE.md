@@ -22,3 +22,7 @@ cuti/
 - **Commander.js** - CLI framework
 - **Chalk** - Terminal styling
 - **TypeScript** - Type safety
+
+## Developing
+
+Use `bun run tsc --noEmit` to check for typescript errors after performing edits
