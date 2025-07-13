@@ -23,10 +23,20 @@ export function createWorktree(options: WorktreeOptions): WorktreeResult {
     options.path ||
     join(repoRoot, '..', `${repoName}_worktrees`, options.branch);
 
+  // Check if branch exists
+  let branchExists = false;
+  try {
+    execSync(`git rev-parse --verify ${options.branch}`, { stdio: 'pipe' });
+    branchExists = true;
+    logger.debug(`Branch ${options.branch} exists`);
+  } catch {
+    logger.debug(`Branch ${options.branch} does not exist, will create it`);
+  }
+
   // Build git worktree command
   let gitCommand = `git worktree add "${worktreePath}" `;
 
-  if (options.create) {
+  if (!branchExists) {
     gitCommand += `-b ${options.branch}`;
   } else {
     gitCommand += options.branch;

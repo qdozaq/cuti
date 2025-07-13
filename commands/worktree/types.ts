@@ -1,7 +1,6 @@
 export interface WorktreeOptions {
   branch: string;
   path?: string;
-  create?: boolean;
   force?: boolean;
 }
 

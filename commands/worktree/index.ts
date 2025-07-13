@@ -24,7 +24,6 @@ class WorktreeCommand implements CLICommand {
         '-p, --path <path>',
         'custom path for the worktree (default: ../<repo-name>_worktrees/<branch-name>)'
       )
-      .option('-c, --create', 'create a new branch')
       .option(
         '-f, --force',
         'force creation even if branch exists or has uncommitted changes'
@@ -54,7 +53,6 @@ class WorktreeCommand implements CLICommand {
     branch: string,
     options: {
       path?: string;
-      create?: boolean;
       force?: boolean;
     }
   ): void {
