@@ -1,5 +1,6 @@
 export interface Config {
   version: string;
+  branchPrefix?: string;
   [key: string]: any;
 }
 
