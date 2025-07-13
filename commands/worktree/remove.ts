@@ -1,6 +1,5 @@
 import { execSync } from 'child_process';
 import chalk from 'chalk';
-import nfzf from 'node-fzf';
 import { logger } from '../../lib/logger';
 import type { RemoveWorktreeOptions } from './types';
 import { listWorktrees } from './list';
@@ -34,6 +33,8 @@ export async function removeWorktree(
     );
 
     try {
+      // Lazy load node-fzf only when needed
+      const nfzf = (await import('node-fzf')).default;
       const result = await nfzf({
         list: fzfList,
         height: 40, // 40% of screen
