@@ -11,7 +11,7 @@ import type { CLICommand } from './types/command';
 // Import commands directly for bundling
 import helloCommand from './commands/hello';
 import configCommand from './commands/config';
-import worktreeCommand from './commands/worktree';
+import worktreeCommand from './commands/worktree/index';
 
 const program = new Command();
 
