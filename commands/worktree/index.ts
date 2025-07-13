@@ -5,6 +5,7 @@ import type { CLICommand } from '../../types/command';
 import { createWorktree } from './add';
 import { removeWorktree } from './remove';
 import { listWorktrees } from './list';
+import { preprocessJiraIssue } from './add-jira';
 
 class WorktreeCommand implements CLICommand {
   name = 'worktree';
@@ -28,6 +29,18 @@ class WorktreeCommand implements CLICommand {
         '-f, --force',
         'force creation even if branch exists or has uncommitted changes'
       )
+      .option(
+        '-j, --jira',
+        'treat the branch parameter as a Jira issue key or URL'
+      )
+      .option(
+        '--no-assign',
+        "Don't assign the Jira issue to yourself (only with --jira)"
+      )
+      .option(
+        '--no-transition',
+        "Don't transition the Jira issue to In Progress (only with --jira)"
+      )
       .action(this.executeCreate.bind(this));
 
     // Remove subcommand
@@ -49,22 +62,37 @@ class WorktreeCommand implements CLICommand {
       .action(this.executeList.bind(this));
   }
 
-  private executeCreate(
+  private async executeCreate(
     branch: string,
     options: {
       path?: string;
       force?: boolean;
+      jira?: boolean;
+      assign?: boolean;
+      transition?: boolean;
     }
-  ): void {
+  ): Promise<void> {
     if (!branch) {
       logger.error('Branch name is required');
       process.exit(1);
     }
 
     try {
+      let actualBranch = branch;
+
+      // If --jira flag is set, preprocess the Jira issue
+      if (options.jira) {
+        const jiraResult = await preprocessJiraIssue(branch, {
+          noAssign: !options.assign,
+          noTransition: !options.transition,
+        });
+        actualBranch = jiraResult.branchName;
+      }
+
       const result = createWorktree({
-        branch,
-        ...options,
+        branch: actualBranch,
+        path: options.path,
+        force: options.force,
       });
 
       console.log(`\nTo navigate to your new worktree:`);
