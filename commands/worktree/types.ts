@@ -18,6 +18,6 @@ export interface RemoveWorktreeOptions {
 
 export interface WorktreeInfo {
   path: string;
-  branch: string;
+  branch?: string;
   commit: string;
 }

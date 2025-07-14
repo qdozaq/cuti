@@ -1,17 +1,13 @@
 import { execSync } from 'child_process';
 import { join } from 'path';
 import chalk from 'chalk';
-import { logger } from '../../lib/logger';
+import { loading } from '../../lib/loading';
 import { configManager } from '../../lib/config';
+import { validateGitRepository } from '../../lib/utils';
 import type { WorktreeOptions, WorktreeResult } from './types';
 
 export function createWorktree(options: WorktreeOptions): WorktreeResult {
-  // Check if we're in a git repository
-  try {
-    execSync('git rev-parse --git-dir', { stdio: 'pipe' });
-  } catch {
-    throw new Error('Not in a git repository');
-  }
+  validateGitRepository();
 
   // Get the repository root
   const repoRoot = execSync('git rev-parse --show-toplevel', {
@@ -41,9 +37,8 @@ export function createWorktree(options: WorktreeOptions): WorktreeResult {
   try {
     execSync(`git rev-parse --verify ${finalBranch}`, { stdio: 'pipe' });
     branchExists = true;
-    logger.debug(`Branch ${finalBranch} exists`);
   } catch {
-    logger.debug(`Branch ${finalBranch} does not exist, will create it`);
+    // Branch does not exist, will create it
   }
 
   // Build git worktree command
@@ -59,16 +54,14 @@ export function createWorktree(options: WorktreeOptions): WorktreeResult {
     gitCommand += ' --force';
   }
 
-  logger.info(`Creating worktree at: ${chalk.cyan(worktreePath)}`);
-  logger.debug(`Executing: ${gitCommand}`);
+  // Start loading animation
+  loading.start('Creating worktree');
 
   // Execute git worktree command
-  execSync(gitCommand, { stdio: 'inherit' });
-
-  logger.success(`Worktree created successfully!`);
+  execSync(gitCommand, { stdio: 'pipe' });
 
   // Copy ignored files to the new worktree
-  logger.info('Copying ignored files to new worktree...');
+  loading.updateMessage('Copying ignored files');
   try {
     // Get list of ignored files/directories
     const ignoredFiles = execSync(
@@ -86,20 +79,17 @@ export function createWorktree(options: WorktreeOptions): WorktreeResult {
       // Create rsync command to copy ignored files
       const rsyncCmd = `rsync -av --relative ${ignoredFiles.map((f) => `"./${f}"`).join(' ')} "${worktreePath}/"`;
 
-      logger.debug(`Copying ${ignoredFiles.length} ignored files/directories`);
       execSync(rsyncCmd, {
         stdio: 'pipe',
         cwd: repoRoot,
       });
-
-      logger.success(`Copied ${ignoredFiles.length} ignored files/directories`);
-    } else {
-      logger.debug('No ignored files to copy');
     }
   } catch (error) {
-    logger.warning('Failed to copy ignored files (this is non-fatal)');
-    logger.debug(`Error: ${error}`);
+    // Failed to copy ignored files (non-fatal)
   }
+
+  // Stop loading animation with success message
+  loading.stop(`Worktree created successfully at ${chalk.cyan(worktreePath)}`);
 
   return {
     path: worktreePath,
