@@ -18,20 +18,20 @@ export class Logger {
   }
 
   info(message: string): void {
-    console.log(chalk.blue('ℹ'), message);
+    console.log(chalk.blue('🩶'), message);
   }
 
   success(message: string): void {
-    console.log(chalk.green('✓'), message);
+    console.log(chalk.green('💚'), message);
   }
 
   warning(message: string): void {
-    console.log(chalk.yellow('⚠'), message);
+    console.log(chalk.yellow('💛'), message);
   }
 
   error(message: string | Error): void {
     const errorMessage = message instanceof Error ? message.message : message;
-    console.error(chalk.red('✗'), errorMessage);
+    console.error(chalk.red('💔'), errorMessage);
     if (message instanceof Error && this.debugMode && message.stack) {
       console.error(chalk.gray(message.stack));
     }

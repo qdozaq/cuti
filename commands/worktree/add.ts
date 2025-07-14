@@ -27,7 +27,14 @@ export function createWorktree(options: WorktreeOptions): WorktreeResult {
 
   // Determine worktree path
   const worktreePath =
-    options.path || join(repoRoot, '..', `${repoName}_worktrees`, finalBranch);
+    options.path ||
+    join(
+      repoRoot,
+      '..',
+      `${repoName}_worktrees`,
+      // use branch without prefix for directory path
+      options.branch
+    );
 
   // Check if branch exists
   let branchExists = false;
