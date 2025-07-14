@@ -9,9 +9,9 @@
     "cuti": "dist/index.js"
   },
   "scripts": {
-    "build": "bun build index.ts --outdir dist --target node --format esm && chmod +x dist/index.js",
+    "build": "bun build index.ts --outdir dist --target bun --format esm && chmod +x dist/index.js",
     "dev": "bun run index.ts",
-    "start": "node dist/index.js",
+    "start": "bun dist/index.js",
     "format": "prettier --write .",
     "prepublishOnly": "bun run build"
   },
