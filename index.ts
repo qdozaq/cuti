@@ -6,6 +6,7 @@ import { logger } from './lib/logger';
 // Import commands directly
 import configCommand from './commands/config';
 import worktreeCommand from './commands/worktree/index';
+import shellInitCommand from './commands/shell-init';
 
 const program = new Command();
 
@@ -22,7 +23,7 @@ program
   });
 
 function registerCommands() {
-  const commands = [configCommand, worktreeCommand];
+  const commands = [configCommand, worktreeCommand, shellInitCommand];
 
   for (const command of commands) {
     try {

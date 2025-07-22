@@ -6,9 +6,10 @@ A CLI containing tools for claude code workflows
 
 ## Features
 
-- **Git Worktree Management** - Create and manage Git worktrees
+- **Git Worktree Management** - Create and manage Git worktrees with interactive navigation
 - **Jira Integration** - Fetch issue details and generate branch names using Claude AI
 - **Configuration Management** - Global and local configuration support
+- **Shell Integration** - Navigate to worktrees directly from your shell
 - **Built with Bun** - Fast runtime execution
 
 ## Installation
@@ -25,6 +26,28 @@ bun link
 ```
 
 ## Usage
+
+### Shell Integration Setup
+
+Enable interactive worktree navigation by adding cuti to your shell configuration:
+
+```bash
+# For bash - add to ~/.bashrc
+eval "$(cuti shell-init bash)"
+
+# For zsh - add to ~/.zshrc
+eval "$(cuti shell-init zsh)"
+
+# For fish - add to ~/.config/fish/config.fish
+cuti shell-init fish | source
+```
+
+After setup, you can use `cuti wt` to interactively navigate to any worktree:
+
+```bash
+# Type this to see an interactive list and jump to a worktree
+cuti wt
+```
 
 ### Configuration
 
@@ -87,6 +110,7 @@ Manage Git worktrees with optional Jira integration.
 - `worktree add <branch>` - Create a new worktree
 - `worktree remove [branch]` - Remove an existing worktree
 - `worktree list` - List all worktrees
+- `worktree` (no subcommand) - With shell integration enabled, shows interactive list and navigates to selected worktree
 
 Options for `worktree add`:
 
@@ -95,6 +119,12 @@ Options for `worktree add`:
 - `-j, --jira` - Treat branch parameter as a Jira issue key/URL
 - `--no-assign` - Don't assign Jira issue to yourself
 - `--no-transition` - Don't transition Jira issue to "In Progress"
+
+#### `cuti shell-init`
+
+Output shell integration script for interactive worktree navigation.
+
+- `shell-init [shell]` - Output integration script for specified shell (bash, zsh, or fish)
 
 ## Development
 

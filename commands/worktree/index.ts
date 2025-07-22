@@ -6,6 +6,7 @@ import { createWorktree } from './add';
 import { removeWorktree } from './remove';
 import { listWorktrees } from './list';
 import { preprocessJiraIssue } from './add-jira';
+import { stderrContext } from '../../lib/prompts';
 
 class WorktreeCommand implements CLICommand {
   name = 'worktree';
@@ -15,7 +16,8 @@ class WorktreeCommand implements CLICommand {
     const worktreeCmd = program
       .command(this.name)
       .alias('wt')
-      .description(this.description);
+      .description(this.description)
+      .action(this.executeInteractiveSelect.bind(this));
 
     // Add subcommand
     worktreeCmd
@@ -151,6 +153,63 @@ class WorktreeCommand implements CLICommand {
         logger.error('Failed to list worktrees');
       }
       process.exit(1);
+    }
+  }
+
+  private async executeInteractiveSelect(): Promise<void> {
+    // Check if running in shell integration mode
+    if (process.env.CUTI_SHELL_CD === '1') {
+      try {
+        const worktrees = listWorktrees();
+
+        if (worktrees.length === 0) {
+          logger.error('No worktrees found');
+          process.exit(1);
+        }
+
+        // If only one worktree (main), just output its path
+        if (worktrees.length === 1 && worktrees[0]) {
+          console.log(worktrees[0].path);
+          return;
+        }
+
+        // Lazy load inquirer only when needed
+        const { select } = await import('@inquirer/prompts');
+
+        // Prepare choices for inquirer
+        const choices = worktrees.map((wt) => ({
+          name: `${(wt.branch || 'main').padEnd(30)} ${wt.path}`,
+          value: wt.path,
+        }));
+
+        try {
+          const selectedPath = await select(
+            {
+              message: 'Select a worktree to navigate to:',
+              choices,
+            },
+            stderrContext
+          );
+
+          // Output ONLY the path to stdout for shell integration
+          // Use write instead of console.log to avoid extra newline
+          process.stdout.write(selectedPath);
+        } catch (innerError) {
+          // User cancelled selection
+          logger.error('Selection cancelled');
+          process.exit(1);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          logger.error(error.message);
+        } else {
+          logger.error('Selection cancelled');
+        }
+        process.exit(1);
+      }
+    } else {
+      // Normal mode - just list worktrees
+      this.executeList();
     }
   }
 }

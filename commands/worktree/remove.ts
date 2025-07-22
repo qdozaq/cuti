@@ -4,6 +4,7 @@ import type { RemoveWorktreeOptions } from './types';
 import { listWorktrees } from './list';
 import { validateGitRepository } from '../../lib/utils';
 import { execSync } from 'child_process';
+import { stderrContext } from '../../lib/prompts';
 
 export async function removeWorktree(
   options: RemoveWorktreeOptions
@@ -23,26 +24,24 @@ export async function removeWorktree(
       throw new Error('No worktrees available to remove');
     }
 
-    // Prepare list for fzf
-    const fzfList = removableWorktrees.map(
-      (wt) => `${wt.branch?.padEnd(30)} ${wt.path}`
-    );
+    // Lazy load inquirer only when needed
+    const { select } = await import('@inquirer/prompts');
+
+    // Prepare choices for inquirer
+    const choices = removableWorktrees.map((wt) => ({
+      name: `${wt.branch?.padEnd(30)} ${wt.path}`,
+      value: wt.branch,
+    }));
 
     try {
-      // Lazy load node-fzf only when needed
-      const nfzf = (await import('node-fzf')).default;
-      const result = await nfzf({
-        list: fzfList,
-        height: 40, // 40% of screen
-        query: '',
-      });
+      branchToRemove = await select(
+        {
+          message: 'Select a worktree to remove:',
+          choices,
+        },
+        stderrContext
+      );
 
-      if (!result.selected) {
-        throw new Error('No worktree selected');
-      }
-
-      // Extract branch name from the selected value
-      branchToRemove = removableWorktrees[result.selected.index]?.branch;
       if (!branchToRemove) {
         throw new Error('Invalid selection');
       }
