@@ -43,6 +43,10 @@ class WorktreeCommand implements CLICommand {
         '--no-transition',
         "Don't transition the Jira issue to In Progress (only with --jira)"
       )
+      .option(
+        '--name-only',
+        'Only generate and output the branch name without creating worktree (only with --jira)'
+      )
       .action(this.executeCreate.bind(this));
 
     // Remove subcommand
@@ -72,10 +76,17 @@ class WorktreeCommand implements CLICommand {
       jira?: boolean;
       assign?: boolean;
       transition?: boolean;
+      nameOnly?: boolean;
     }
   ): Promise<void> {
     if (!branch) {
       logger.error('Branch name is required');
+      process.exit(1);
+    }
+
+    // Validate that --name-only is only used with --jira
+    if (options.nameOnly && !options.jira) {
+      logger.error('--name-only can only be used with --jira flag');
       process.exit(1);
     }
 
@@ -85,10 +96,16 @@ class WorktreeCommand implements CLICommand {
       // If --jira flag is set, preprocess the Jira issue
       if (options.jira) {
         const jiraResult = await preprocessJiraIssue(branch, {
-          noAssign: !options.assign,
-          noTransition: !options.transition,
+          noAssign: options.nameOnly || !options.assign,
+          noTransition: options.nameOnly || !options.transition,
         });
         actualBranch = jiraResult.branchName;
+
+        // If --name-only flag is set, just output the branch name and exit
+        if (options.nameOnly) {
+          console.log(actualBranch);
+          return;
+        }
       }
 
       const result = createWorktree({
