@@ -1,6 +1,6 @@
 {
   "name": "cuti",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A modular CLI tool built with Commander.js",
   "main": "dist/index.js",
   "module": "index.ts",
