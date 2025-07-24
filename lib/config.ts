@@ -2,11 +2,13 @@ import { join } from 'path';
 import { homedir } from 'os';
 import { readFileSync, existsSync, mkdirSync } from 'fs';
 import type { JiraConfig } from './jira-config';
+import type { HookConfig } from '../types/hooks';
 
 export interface Config {
   version: string;
   branchPrefix?: string;
   jira?: JiraConfig;
+  hooks?: HookConfig;
   [key: string]: any;
 }
 

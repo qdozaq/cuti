@@ -7,6 +7,8 @@ import { removeWorktree } from './remove';
 import { listWorktrees } from './list';
 import { preprocessJiraIssue } from './add-jira';
 import { stderrContext } from '../../lib/prompts';
+import { hookManager } from '../../lib/hooks';
+import type { HookContext } from '../../types/hooks';
 
 class WorktreeCommand implements CLICommand {
   name = 'worktree';
@@ -90,7 +92,25 @@ class WorktreeCommand implements CLICommand {
       process.exit(1);
     }
 
+    const hookContext: HookContext = {
+      command: 'worktree',
+      subcommand: 'add',
+      phase: 'pre',
+      args: {
+        branch,
+        path: options.path,
+        force: options.force,
+        jira: options.jira,
+        assign: options.assign,
+        transition: options.transition,
+        nameOnly: options.nameOnly,
+      },
+    };
+
     try {
+      // Run pre hooks
+      await hookManager.runHooks('pre-worktree-add', hookContext);
+
       let actualBranch = branch;
 
       // If --jira flag is set, preprocess the Jira issue
@@ -114,9 +134,27 @@ class WorktreeCommand implements CLICommand {
         force: options.force,
       });
 
+      // Run post hooks
+      const postHookContext: HookContext = {
+        ...hookContext,
+        phase: 'post',
+        result,
+      };
+      await hookManager.runHooks('post-worktree-add', postHookContext);
+
       console.log(`\nTo navigate to your new worktree:`);
       console.log(chalk.cyan(`  cd "${result.path}"`));
     } catch (error) {
+      // Run post hooks with error
+      const errorHookContext: HookContext = {
+        ...hookContext,
+        phase: 'post',
+        error: error instanceof Error ? error : new Error('Operation failed'),
+      };
+      await hookManager
+        .runHooks('post-worktree-add', errorHookContext)
+        .catch(() => {});
+
       if (error instanceof Error) {
         logger.error(error.message);
       } else {
@@ -132,12 +170,42 @@ class WorktreeCommand implements CLICommand {
       force?: boolean;
     }
   ): Promise<void> {
+    const hookContext: HookContext = {
+      command: 'worktree',
+      subcommand: 'remove',
+      phase: 'pre',
+      args: {
+        branch,
+        force: options.force,
+      },
+    };
+
     try {
+      // Run pre hooks
+      await hookManager.runHooks('pre-worktree-remove', hookContext);
+
       await removeWorktree({
         branch,
         force: options.force,
       });
+
+      // Run post hooks
+      const postHookContext: HookContext = {
+        ...hookContext,
+        phase: 'post',
+      };
+      await hookManager.runHooks('post-worktree-remove', postHookContext);
     } catch (error) {
+      // Run post hooks with error
+      const errorHookContext: HookContext = {
+        ...hookContext,
+        phase: 'post',
+        error: error instanceof Error ? error : new Error('Operation failed'),
+      };
+      await hookManager
+        .runHooks('post-worktree-remove', errorHookContext)
+        .catch(() => {});
+
       if (error instanceof Error) {
         logger.error(error.message);
       } else {
@@ -147,8 +215,18 @@ class WorktreeCommand implements CLICommand {
     }
   }
 
-  private executeList(): void {
+  private async executeList(): Promise<void> {
+    const hookContext: HookContext = {
+      command: 'worktree',
+      subcommand: 'list',
+      phase: 'pre',
+      args: {},
+    };
+
     try {
+      // Run pre hooks
+      await hookManager.runHooks('pre-worktree-list', hookContext);
+
       const worktrees = listWorktrees();
 
       if (worktrees.length === 0) {
@@ -163,7 +241,27 @@ class WorktreeCommand implements CLICommand {
           `  ${chalk.cyan(branch.padEnd(30))} ${chalk.gray(wt.path)}`
         );
       }
+
+      // Run post hooks
+      const postHookContext: HookContext = {
+        ...hookContext,
+        phase: 'post',
+      };
+      await hookManager.runHooks('post-worktree-list', postHookContext);
     } catch (error) {
+      // Run post hooks with error
+      const errorHookContext: HookContext = {
+        ...hookContext,
+        phase: 'post',
+        error:
+          error instanceof Error
+            ? error
+            : new Error('Failed to list worktrees'),
+      };
+      await hookManager
+        .runHooks('post-worktree-list', errorHookContext)
+        .catch(() => {});
+
       if (error instanceof Error) {
         logger.error(error.message);
       } else {
@@ -226,7 +324,7 @@ class WorktreeCommand implements CLICommand {
       }
     } else {
       // Normal mode - just list worktrees
-      this.executeList();
+      await this.executeList();
     }
   }
 }
